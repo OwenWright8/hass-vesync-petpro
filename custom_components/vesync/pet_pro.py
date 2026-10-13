@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from pyvesync.const import ConnectionStatus, DeviceStatus
+from pyvesync.const import ConnectionStatus, DeviceStatus, PurifierModes
 from pyvesync.devices.vesyncpurifier import VeSyncAirBaseV2
 from pyvesync.utils.device_mixins import _get_inner_result
 from pyvesync.utils.helpers import Helpers, Timer
@@ -53,6 +53,40 @@ class VeSyncAirPetPro(VeSyncAirBaseV2):
             )
 
         self._set_pet_pro_state(result)
+
+    async def set_fan_speed(self, speed: int | None = None) -> bool:
+        """Set manual fan speed, logging the raw reply if the device rejects it."""
+        if speed is not None and speed not in self.fan_levels:
+            _LOGGER.warning(
+                "%s is invalid speed - valid speeds are %s", speed, self.fan_levels
+            )
+            return False
+        if speed is None:
+            speed = (
+                self.fan_levels[0]
+                if self.state.fan_level is None
+                else Helpers.bump_level(self.state.fan_level, self.fan_levels)
+            )
+
+        payload = {"levelIdx": 0, "manualSpeedLevel": speed, "levelType": "wind"}
+        r_dict = await self.call_bypassv2_api("setLevel", payload)
+        outer = r_dict.get("result") if isinstance(r_dict, dict) else None
+        inner_code = outer.get("code") if isinstance(outer, dict) else None
+        if (
+            Helpers.process_dev_response(_LOGGER, "set_fan_speed", self, r_dict) is None
+            or inner_code not in (0, None)
+        ):
+            _LOGGER.warning(
+                "Vital Pet Pro rejected setLevel %s (please share): %s", payload, r_dict
+            )
+            return False
+
+        self.state.fan_set_level = speed
+        self.state.fan_level = speed
+        self.state.mode = PurifierModes.MANUAL
+        self.state.device_status = DeviceStatus.ON
+        self.state.connection_status = ConnectionStatus.ONLINE
+        return True
 
     def _set_pet_pro_state(self, result: dict[str, Any]) -> None:
         state = self.state
