@@ -10,8 +10,13 @@ Feature request: https://github.com/orgs/home-assistant/discussions/3802
 pyvesync only creates devices whose model code is in its device map. The Pet Pro
 is missing, so the device never appears in Home Assistant. This fork's
 `custom_components/vesync/device_map_ext.py` registers `LAP-P501S` (any regional
-suffix) with pyvesync's `VeSyncAirBaseV2` class, the same one the Vital 100S/200S use.
-Everything else is the stock integration.
+suffix) with pyvesync.
+
+The Pet Pro uses the same API as the Vital 100S/200S, but its status response
+leaves out fields (e.g. `lightDetectionSwitch`) that pyvesync's Vital model requires.
+`pet_pro.py` subclasses `VeSyncAirBaseV2` and reads the response tolerantly.
+On first update it logs the raw status payload once at WARNING level, so the
+real field names can be confirmed. Everything else is the stock integration.
 
 Because it uses the `vesync` domain, it **overrides** the built-in integration.
 Your existing VeSync config entry and entities stay as they are.
@@ -32,8 +37,11 @@ Your existing VeSync config entry and entities stay as they are.
 | Display | `switch` |
 | Child lock | `switch` |
 
-**Not included:** TVOC and the Auto-Clean pre-filter scraper. pyvesync has no fields
-for them, and adding them needs the device's raw API responses.
+A **TVOC** sensor is created only if the payload contains a VOC field (the
+name is guessed; the unit is unconfirmed).
+
+**Not included yet:** the Auto-Clean pre-filter scraper. Its field and command
+are unknown; the logged payload will show the field.
 
 ## Debugging
 
