@@ -148,17 +148,19 @@ class VeSyncAirPetPro(VeSyncAirBaseV2):
             "odor_level": _int(result, "odorLevel"),
             "filter_days_remaining": _int(result, "filterRemainDay"),
             "auto_clean_state": _int(auto_clean, "autoCleanState"),
-            "buzzer": _int(result, "buzzerSwitch"),
+            # buzzerSwitch is inverted on the Pet Pro: 1 = muted, 0 = beeps.
+            "beep": None if (buzzer := _int(result, "buzzerSwitch")) is None
+            else buzzer == 0,
         }
 
-    async def toggle_buzzer(self, toggle: bool) -> bool:
-        """Turn the beep on or off.
+    async def toggle_beep(self, toggle: bool) -> bool:
+        """Turn the beep on or off (sends the inverted buzzerSwitch value).
 
         pyvesync has no buzzer command, so the method name is inferred from the
         Vital API's pattern (setChildLock/childLockSwitch). Candidates are tried
         in order and the first one the device accepts is remembered.
         """
-        payload = {"buzzerSwitch": int(toggle)}
+        payload = {"buzzerSwitch": int(not toggle)}
         known = getattr(self, "_buzzer_method", None)
         for method in [known] if known else _BUZZER_METHODS:
             r_dict = await self.call_bypassv2_api(method, payload)
@@ -170,7 +172,7 @@ class VeSyncAirPetPro(VeSyncAirBaseV2):
                 and outer.get("code") == 0
             ):
                 self._buzzer_method = method
-                self.pet_pro_extra = {**self.pet_pro_extra, "buzzer": int(toggle)}
+                self.pet_pro_extra = {**self.pet_pro_extra, "beep": toggle}
                 return True
             _LOGGER.warning(
                 "Vital Pet Pro rejected %s %s (please share): %s",

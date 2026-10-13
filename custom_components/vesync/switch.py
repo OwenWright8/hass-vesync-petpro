@@ -140,11 +140,11 @@ SENSOR_DESCRIPTIONS: Final[tuple[VeSyncSwitchEntityDescription, ...]] = (
         key="buzzer",
         name="Beep",
         icon="mdi:volume-high",
-        is_on=lambda device: bool(pet_pro_value(device, "buzzer")),
-        exists_fn=lambda device: pet_pro_value(device, "buzzer") is not None,
+        is_on=lambda device: bool(pet_pro_value(device, "beep")),
+        exists_fn=lambda device: pet_pro_value(device, "beep") is not None,
         entity_category=EntityCategory.CONFIG,
-        on_fn=lambda device: device.toggle_buzzer(True),
-        off_fn=lambda device: device.toggle_buzzer(False),
+        on_fn=lambda device: device.toggle_beep(True),
+        off_fn=lambda device: device.toggle_beep(False),
     ),
 )
 
