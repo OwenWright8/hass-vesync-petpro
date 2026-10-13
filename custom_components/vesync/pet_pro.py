@@ -24,6 +24,9 @@ _LOGGED_PAYLOAD: set[str] = set()
 # Candidate keys for the Pet Pro's VOC reading; the real name is unconfirmed.
 _VOC_KEYS = ("TVOC", "tvoc", "VOC", "voc", "TVOCLevel", "VOCLevel")
 
+# Guessed bypassV2 method names for the buzzer, most likely first.
+_BUZZER_METHODS = ("setBuzzerSwitch", "setBuzzer", "setBeep")
+
 
 def _int(result: dict[str, Any], key: str) -> int | None:
     value = result.get(key)
@@ -145,4 +148,34 @@ class VeSyncAirPetPro(VeSyncAirBaseV2):
             "odor_level": _int(result, "odorLevel"),
             "filter_days_remaining": _int(result, "filterRemainDay"),
             "auto_clean_state": _int(auto_clean, "autoCleanState"),
+            "buzzer": _int(result, "buzzerSwitch"),
         }
+
+    async def toggle_buzzer(self, toggle: bool) -> bool:
+        """Turn the beep on or off.
+
+        pyvesync has no buzzer command, so the method name is inferred from the
+        Vital API's pattern (setChildLock/childLockSwitch). Candidates are tried
+        in order and the first one the device accepts is remembered.
+        """
+        payload = {"buzzerSwitch": int(toggle)}
+        known = getattr(self, "_buzzer_method", None)
+        for method in [known] if known else _BUZZER_METHODS:
+            r_dict = await self.call_bypassv2_api(method, payload)
+            outer = r_dict.get("result") if isinstance(r_dict, dict) else None
+            if (
+                isinstance(r_dict, dict)
+                and r_dict.get("code") == 0
+                and isinstance(outer, dict)
+                and outer.get("code") == 0
+            ):
+                self._buzzer_method = method
+                self.pet_pro_extra = {**self.pet_pro_extra, "buzzer": int(toggle)}
+                return True
+            _LOGGER.warning(
+                "Vital Pet Pro rejected %s %s (please share): %s",
+                method,
+                payload,
+                r_dict,
+            )
+        return False

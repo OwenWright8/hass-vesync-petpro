@@ -94,14 +94,7 @@ SENSORS: tuple[VeSyncSensorEntityDescription, ...] = (
         exists_fn=lambda device: rgetattr(device, "state.pm25") is not None,
     ),
     VeSyncSensorEntityDescription(
-        # Level index reported by the device (Pet Pro: 1 = good), not ppb.
-        key="voc",
-        name="VOC level",
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda device: device.state.voc,
-        exists_fn=lambda device: rgetattr(device, "state.voc") is not None,
-    ),
-    VeSyncSensorEntityDescription(
+        # Pet Pro's single gas sensor; its "VOC" field mirrors this level.
         key="odor-level",
         name="Odor level",
         state_class=SensorStateClass.MEASUREMENT,

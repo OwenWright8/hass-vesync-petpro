@@ -24,6 +24,7 @@ from .common import is_humidifier, is_outlet, is_wall_switch, rgetattr
 from .const import VS_DEVICES, VS_DISCOVERY
 from .coordinator import VesyncConfigEntry, VeSyncDataCoordinator
 from .entity import VeSyncBaseEntity
+from .pet_pro import pet_pro_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -134,6 +135,16 @@ SENSOR_DESCRIPTIONS: Final[tuple[VeSyncSwitchEntityDescription, ...]] = (
         on_fn=lambda device: _toggle_drying_mode_on_power_off(device, True),
         off_fn=lambda device: _toggle_drying_mode_on_power_off(device, False),
         entity_category=EntityCategory.CONFIG,
+    ),
+    VeSyncSwitchEntityDescription(
+        key="buzzer",
+        name="Beep",
+        icon="mdi:volume-high",
+        is_on=lambda device: bool(pet_pro_value(device, "buzzer")),
+        exists_fn=lambda device: pet_pro_value(device, "buzzer") is not None,
+        entity_category=EntityCategory.CONFIG,
+        on_fn=lambda device: device.toggle_buzzer(True),
+        off_fn=lambda device: device.toggle_buzzer(False),
     ),
 )
 

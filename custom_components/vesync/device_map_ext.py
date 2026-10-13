@@ -41,7 +41,7 @@ VITAL_PET_PRO = PurifierMap(
         PurifierModes.PET,
     ],
     features=[PurifierFeatures.AIR_QUALITY],
-    fan_levels=list(range(1, 5)),
+    fan_levels=list(range(1, 4)),  # Pet Pro has speeds 1-3
     device_alias="Vital Pet Pro",
     auto_preferences=[
         PurifierAutoPreference.DEFAULT,
