@@ -33,6 +33,7 @@ from .common import is_air_fryer, is_humidifier, is_outlet, rgetattr
 from .const import AIR_FRYER_MODE_MAP, VS_DEVICES, VS_DISCOVERY
 from .coordinator import VesyncConfigEntry, VeSyncDataCoordinator
 from .entity import VeSyncBaseEntity
+from .pet_pro import pet_pro_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,12 +94,29 @@ SENSORS: tuple[VeSyncSensorEntityDescription, ...] = (
         exists_fn=lambda device: rgetattr(device, "state.pm25") is not None,
     ),
     VeSyncSensorEntityDescription(
-        # Raw device reading; unit and scale on the Pet Pro are unconfirmed.
+        # Level index reported by the device (Pet Pro: 1 = good), not ppb.
         key="voc",
-        name="TVOC",
+        name="VOC level",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda device: device.state.voc,
         exists_fn=lambda device: rgetattr(device, "state.voc") is not None,
+    ),
+    VeSyncSensorEntityDescription(
+        key="odor-level",
+        name="Odor level",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda device: pet_pro_value(device, "odor_level"),
+        exists_fn=lambda device: pet_pro_value(device, "odor_level") is not None,
+    ),
+    VeSyncSensorEntityDescription(
+        key="filter-days-remaining",
+        name="Filter days remaining",
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda device: pet_pro_value(device, "filter_days_remaining"),
+        exists_fn=(
+            lambda device: pet_pro_value(device, "filter_days_remaining") is not None
+        ),
     ),
     VeSyncSensorEntityDescription(
         key="power",

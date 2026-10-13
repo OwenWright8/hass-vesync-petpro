@@ -30,10 +30,19 @@ def _int(result: dict[str, Any], key: str) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
-class VeSyncAirPetPro(VeSyncAirBaseV2):
-    """Levoit Vital Pet Pro (LAP-P501S)."""
+def pet_pro_value(device: object, key: str) -> Any:
+    """Return a Pet Pro-only value, or None for any other device."""
+    return getattr(device, "pet_pro_extra", {}).get(key)
 
-    __slots__ = ()
+
+class VeSyncAirPetPro(VeSyncAirBaseV2):
+    """Levoit Vital Pet Pro (LAP-P501S).
+
+    No ``__slots__`` here, so instances get a ``__dict__`` for ``pet_pro_extra``:
+    readings pyvesync's PurifierState has no slot for.
+    """
+
+    pet_pro_extra: dict[str, Any]
 
     async def get_details(self) -> None:
         """Fetch purifier status and update state, tolerating missing fields."""
@@ -128,3 +137,12 @@ class VeSyncAirPetPro(VeSyncAirBaseV2):
             state.filter_open_state = bool(filter_open)
         if (timer_remain := _int(result, "timerRemain")) and timer_remain > 0:
             state.timer = Timer(timer_remain, "off")
+
+        auto_clean = result.get("autoCleanPreference")
+        if not isinstance(auto_clean, dict):
+            auto_clean = {}
+        self.pet_pro_extra = {
+            "odor_level": _int(result, "odorLevel"),
+            "filter_days_remaining": _int(result, "filterRemainDay"),
+            "auto_clean_state": _int(auto_clean, "autoCleanState"),
+        }

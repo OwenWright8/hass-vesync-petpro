@@ -21,6 +21,7 @@ from .common import rgetattr
 from .const import VS_DEVICES, VS_DISCOVERY
 from .coordinator import VesyncConfigEntry, VeSyncDataCoordinator
 from .entity import VeSyncBaseEntity
+from .pet_pro import pet_pro_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +52,13 @@ SENSOR_DESCRIPTIONS: tuple[VeSyncBinarySensorEntityDescription, ...] = (
         exists_fn=(
             lambda device: rgetattr(device, "state.water_tank_lifted") is not None
         ),
+    ),
+    VeSyncBinarySensorEntityDescription(
+        key="auto-clean",
+        name="Auto-clean",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        is_on=lambda device: bool(pet_pro_value(device, "auto_clean_state")),
+        exists_fn=lambda device: pet_pro_value(device, "auto_clean_state") is not None,
     ),
 )
 
