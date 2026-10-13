@@ -15,13 +15,16 @@ from pyvesync.const import (
 )
 from pyvesync.device_map import PurifierMap
 
+from . import pet_pro
+
 _LOGGER = logging.getLogger(__name__)
 
-# Levoit Vital Pet Pro. Assumed to share the Vital 100S/200S (V2 bypass) API.
-# The bare "LAP-P501S" entry also lets pyvesync's prefix fallback match any
-# regional suffix not listed here.
+# Levoit Vital Pet Pro. Uses the Vital 100S/200S (V2 bypass) API with a
+# tolerant status parser, see pet_pro.py. The bare "LAP-P501S" entry also lets
+# pyvesync's prefix fallback match any regional suffix not listed here.
 VITAL_PET_PRO = PurifierMap(
-    class_name="VeSyncAirBaseV2",
+    class_name="VeSyncAirPetPro",
+    module=pet_pro,
     dev_types=[
         "LAP-P501S",
         "LAP-P501S-WUS",

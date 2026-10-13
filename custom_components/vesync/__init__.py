@@ -51,7 +51,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: VesyncConfigEntry
-) -> None:
+) -> bool:
     """Set up Vesync as config entry."""
     username = config_entry.data[CONF_USERNAME]
     password = config_entry.data[CONF_PASSWORD]
@@ -93,16 +93,17 @@ async def async_setup_entry(
         )
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+    return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: VesyncConfigEntry) -> None:
+async def async_unload_entry(hass: HomeAssistant, entry: VesyncConfigEntry) -> bool:
     """Unload a config entry."""
-    await hass.config_entries.async_unload_platforms_or_raise(entry, PLATFORMS)
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_migrate_entry(
     hass: HomeAssistant, config_entry: VesyncConfigEntry
-) -> None:
+) -> bool:
     """Migrate old entry."""
     _LOGGER.debug(
         "Migrating VeSync config entry: %s minor version: %s",
@@ -133,6 +134,7 @@ async def async_migrate_entry(
             else:
                 _LOGGER.debug("Skipping entity with unique_id: %s", reg_entry.unique_id)
         hass.config_entries.async_update_entry(config_entry, minor_version=2)
+    return True
 
 
 async def async_remove_config_entry_device(

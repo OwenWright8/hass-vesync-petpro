@@ -93,6 +93,14 @@ SENSORS: tuple[VeSyncSensorEntityDescription, ...] = (
         exists_fn=lambda device: rgetattr(device, "state.pm25") is not None,
     ),
     VeSyncSensorEntityDescription(
+        # Raw device reading; unit and scale on the Pet Pro are unconfirmed.
+        key="voc",
+        name="TVOC",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda device: device.state.voc,
+        exists_fn=lambda device: rgetattr(device, "state.voc") is not None,
+    ),
+    VeSyncSensorEntityDescription(
         key="power",
         translation_key="current_power",
         device_class=SensorDeviceClass.POWER,
