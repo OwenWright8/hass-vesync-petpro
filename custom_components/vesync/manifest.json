@@ -1,0 +1,13 @@
+{
+  "domain": "vesync",
+  "name": "VeSync (Vital Pet Pro fork)",
+  "codeowners": [],
+  "config_flow": true,
+  "dhcp": [{ "hostname": "levoit-*" }],
+  "documentation": "https://github.com/orgs/home-assistant/discussions/3802",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "loggers": ["pyvesync"],
+  "requirements": ["pyvesync==3.4.2"],
+  "version": "3.4.2.1"
+}
