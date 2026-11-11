@@ -65,3 +65,12 @@ Then download the integration's diagnostics. Look for:
 
 Once upstream pyvesync/Home Assistant supports the Pet Pro, delete
 `custom_components/vesync` and restart to go back to the built-in integration.
+
+## License
+
+This integration is derived from Home Assistant's `vesync` integration in
+[home-assistant/core](https://github.com/home-assistant/core), which is licensed under the
+Apache License 2.0. This fork is distributed under the same license; see [LICENSE](LICENSE).
+
+Changes from upstream: added `device_map_ext.py` and `pet_pro.py` to support the
+Levoit Vital Pet Pro (LAP-P501S). All other files are unmodified copies from upstream.
